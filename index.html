@@ -31,7 +31,7 @@
         button { cursor: pointer; border: none; font-family: inherit; }
 
         /* شاشة التحميل */
-        #loadingScreen { position: fixed; inset: 0; background: var(--bg-body); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; transition: 0.3s; }
+        #loadingScreen { position: fixed; inset: 0; background: var(--bg-body); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; transition: 0.3s; }
         .spinner { width: 35px; height: 35px; border: 3px solid rgba(0,0,0,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -153,8 +153,8 @@
         
         .wa-float { position: fixed; bottom: 15px; left: 15px; background: #25D366; color: #ffffff !important; width: 48px; height: 48px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 3px 8px rgba(0,0,0,0.2); z-index: 1500; text-decoration: none !important; border: none; outline: none; }
 
-        /* Modals */
-        .modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 3000; display: none; padding: 12px; }
+        /* Modals - تم رفع الطبقة لـ 9999 لضمان ظهورها فوق لوحة الإدارة */
+        .modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999; display: none; padding: 12px; }
         .modal-box { background: #fff; padding: 25px; border-radius: var(--radius-md); width: 100%; max-width: 400px; position: relative; max-height: 90vh; overflow-y: auto; }
         .close-m { position: absolute; top: 12px; left: 12px; font-size: 18px; cursor: pointer; color: #888; background: none; border: none; }
     </style>
@@ -525,14 +525,14 @@
         orders: [], archiveOrders: [] 
     };
     
-    let db = JSON.parse(localStorage.getItem('AdaliaDB_V45')) || initDb;
+    let db = JSON.parse(localStorage.getItem('AdaliaDB_V47')) || initDb;
     let currUser = localStorage.getItem('AdaliaCurrUser') || null;
     let cart = []; let currCat = "الكل";
     let activeFinishingTaskId = null;
     let activeFinishingTechPhone = null;
 
     function saveDB() { 
-        localStorage.setItem('AdaliaDB_V45', JSON.stringify(db)); 
+        localStorage.setItem('AdaliaDB_V47', JSON.stringify(db)); 
         if(dbCloud) {
             dbCloud.collection("system").doc("mainDatabase").set(db).catch(()=>{});
         }
@@ -556,7 +556,7 @@
         const l = document.getElementById('loadingScreen');
         const start = () => { 
             l.style.opacity=0; setTimeout(()=>l.style.display='none',200); 
-            db=JSON.parse(localStorage.getItem('AdaliaDB_V45'))||initDb; 
+            db=JSON.parse(localStorage.getItem('AdaliaDB_V47'))||initDb; 
             ensureDataIntegrity();
             db.techs=db.techs||{}; db.orders=db.orders||[]; db.archiveOrders=db.archiveOrders||[]; 
             initUI(); 
@@ -613,7 +613,6 @@
     function openCart() { 
         if(cart.length === 0) return alertMsg("السلة فارغة", "الرجاء إضافة منتجات أولاً.");
         
-        // التحقق مما إذا كان المستخدم مسجل دخول كعميل أساسي
         if(currUser && currUser !== 'admin' && !db.techs[currUser] && db.users[currUser]) {
             const u = db.users[currUser];
             let tot=0, items=""; 
@@ -672,18 +671,38 @@
     }
 
     function login() {
-        const n=document.getElementById('lName').value.trim().toLowerCase(), p=document.getElementById('lPhone').value.trim().toLowerCase();
+        const n = document.getElementById('lName').value.trim().toLowerCase();
+        const p = document.getElementById('lPhone').value.trim().toLowerCase();
         const remember = document.getElementById('rememberMe').checked;
+        
         if(n === 'admin' || p === 'admin') { 
-            currUser='admin'; 
-            if(remember) localStorage.setItem('AdaliaCurrUser', 'admin');
-            closeModal('loginModal'); updateAuth(); return; 
+            currUser = 'admin'; 
+            if(remember) {
+                localStorage.setItem('AdaliaCurrUser', 'admin');
+            } else {
+                localStorage.removeItem('AdaliaCurrUser');
+            }
+            closeModal('loginModal'); 
+            updateAuth(); 
+            return; 
         }
-        if(!n||!p)return alertMsg("خطأ", "برجاء كتابة الاسم ورقم التليفون.");
-        let ph = p.startsWith('0')?p:'0'+p;
-        if(db.techs[ph]) currUser = ph; else { if(!db.users[ph]) db.users[ph]={phone:ph, name:n, messages:[], notesList:[]}; currUser=ph; }
-        if(remember) localStorage.setItem('AdaliaCurrUser', currUser);
-        saveDB(); closeModal('loginModal'); updateAuth(); showView(db.techs[currUser]?'tech':'client');
+        if(!n || !p) return alertMsg("خطأ", "برجاء كتابة الاسم ورقم التليفون.");
+        let ph = p.startsWith('0') ? p : '0'+p;
+        if(db.techs[ph]) {
+            currUser = ph;
+        } else { 
+            if(!db.users[ph]) db.users[ph] = { phone: ph, name: n, messages: [], notesList: [] }; 
+            currUser = ph; 
+        }
+        if(remember) {
+            localStorage.setItem('AdaliaCurrUser', currUser);
+        } else {
+            localStorage.removeItem('AdaliaCurrUser');
+        }
+        saveDB(); 
+        closeModal('loginModal'); 
+        updateAuth(); 
+        showView(db.techs[currUser] ? 'tech' : 'client');
     }
     
     function logout() { 
@@ -728,7 +747,7 @@
         
         let arr = db.products.filter(p => (currCat==="الكل"||p.cat===currCat) && p.name.toLowerCase().includes(q));
         
-        if(arr.length===0){ g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#888;font-weight:bold;">لا توجد منتجات.</div>'; return; }
+        if(arr.length===0){ g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:30px;color:#888;font-weight:bold;">لا توجد منتجات.</div>'; return; }
         
         arr.forEach(p => { 
             g.innerHTML+=`<div class="product-card"><div class="product-img-wrapper"><span class="badge-cat">${p.cat||'عام'}</span><img src="${p.img||'https://via.placeholder.com/150'}" class="product-img"></div><div class="product-info"><div class="product-title">${p.name}</div><div class="product-price">${Number(p.price).toLocaleString()} ج.م</div><button class="btn-add-cart" onclick="addCrt(${p.id}, '${p.name}', ${p.price}, '${p.img}')">أضف للسلة</button></div></div>`; 
@@ -967,7 +986,7 @@
     }
 
     function updateShipping(orderId, val) {
-        const o = db.orders.find(x => x.id === orderId);
+        const o = db.orders.find(x => Number(x.id) === Number(orderId));
         if(o) {
             o.shipping = Number(val) || 0;
             saveDB();
@@ -977,7 +996,7 @@
 
     function sendPreparingWhatsApp(orderId) {
         document.querySelectorAll('[id^="ordMenu_"]').forEach(el => el.style.display = 'none');
-        const o = db.orders.find(x => x.id === orderId);
+        const o = db.orders.find(x => Number(x.id) === Number(orderId));
         if(!o) return;
         const shipCost = o.shipping || 0;
         const finalTotal = Number(o.total) + Number(shipCost);
@@ -988,7 +1007,7 @@
 
     function moveToArchive(orderId) {
         document.querySelectorAll('[id^="ordMenu_"]').forEach(el => el.style.display = 'none');
-        const idx = db.orders.findIndex(x => x.id === orderId);
+        const idx = db.orders.findIndex(x => Number(x.id) === Number(orderId));
         if(idx !== -1) {
             const completedOrder = db.orders.splice(idx, 1)[0];
             completedOrder.status = 'delivered';
@@ -1002,7 +1021,7 @@
 
     function delArchive(id) {
         showConfirm("هل أنت متأكد من حذف هذا الطلب من الأرشيف نهائياً؟", () => {
-            db.archiveOrders = db.archiveOrders.filter(x => x.id !== id);
+            db.archiveOrders = db.archiveOrders.filter(x => Number(x.id) !== Number(id));
             saveDB();
             renderAdmin();
             alertMsg("تم الحذف", "تم حذف الطلب من الأرشيف.");
@@ -1138,7 +1157,7 @@
 
     function delTask(techPhone, taskId) {
         showConfirm("حذف هذه المأمورية نهائياً من السيرفر؟", () => {
-            db.techs[techPhone].tasks = db.techs[techPhone].tasks.filter(t => t.id !== taskId);
+            db.techs[techPhone].tasks = db.techs[techPhone].tasks.filter(t => Number(t.id) !== Number(taskId));
             saveDB();
             renderAdmin();
             alertMsg("تم الحذف", "تم حذف المأمورية بنجاح.");
@@ -1172,7 +1191,7 @@
 
     function delP(id) { 
         showConfirm("هل أنت متأكد من حذف هذا المنتج نهائياً من السيرفر؟", () => {
-            db.products = db.products.filter(p => p.id !== id); 
+            db.products = db.products.filter(p => Number(p.id) !== Number(id)); 
             saveDB(); renderAdmin(); renderStore();
             alertMsg("تم الحذف", "تم حذف المنتج بنجاح.");
         }); 
@@ -1181,7 +1200,7 @@
     function delO(id) { 
         document.querySelectorAll('[id^="ordMenu_"]').forEach(el => el.style.display = 'none');
         showConfirm("هل أنت متأكد من حذف هذا الطلب نهائياً من السيرفر؟", () => {
-            db.orders = db.orders.filter(o => o.id !== id); 
+            db.orders = db.orders.filter(o => Number(o.id) !== Number(id)); 
             saveDB(); 
             renderAdmin();
             alertMsg("تم الحذف", "تم حذف الطلب نهائياً.");
