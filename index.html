@@ -153,7 +153,7 @@
         
         .wa-float { position: fixed; bottom: 15px; left: 15px; background: #25D366; color: #ffffff !important; width: 48px; height: 48px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 3px 8px rgba(0,0,0,0.2); z-index: 1500; text-decoration: none !important; border: none; outline: none; }
 
-        /* Modals - تم رفع الطبقة لـ 9999 لضمان ظهورها فوق لوحة الإدارة */
+        /* Modals - طبقة 9999 لضمان الظهور */
         .modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999; display: none; padding: 12px; }
         .modal-box { background: #fff; padding: 25px; border-radius: var(--radius-md); width: 100%; max-width: 400px; position: relative; max-height: 90vh; overflow-y: auto; }
         .close-m { position: absolute; top: 12px; left: 12px; font-size: 18px; cursor: pointer; color: #888; background: none; border: none; }
@@ -252,12 +252,24 @@
             <div class="footer-content">
                 <div><h3>أضاليا للمصاعد</h3><p>وجهتك الأولى لأرقى وأفضل خدمات المصاعد وقطع الغيار الأصلية.</p></div>
                 <div><h3>روابط</h3><ul><li><a href="#" onclick="showView('store')">المتجر</a></li><li><a href="#" onclick="openModal('infoModal')">عن الشركة</a></li></ul></div>
-                <div><h3>تواصل</h3><div class="footer-contact"><i class="fab fa-whatsapp"></i><span dir="ltr">01556875009</span></div><div class="footer-contact"><i class="fas fa-envelope"></i><span dir="ltr">adaliaforelectricelevators@gmail.com</span></div></div>
+                <div>
+                    <h3>تواصل</h3>
+                    <div class="footer-contact">
+                        <a href="https://wa.me/201556875009" target="_blank" style="color:inherit; text-decoration:none;"><i class="fab fa-whatsapp"></i> <span dir="ltr">01556875009</span></a>
+                    </div>
+                    <div class="footer-contact">
+                        <a href="tel:01003637971" style="color:inherit; text-decoration:none;"><i class="fas fa-phone"></i> <span dir="ltr">0100 363 7971</span></a>
+                    </div>
+                    <div class="footer-contact">
+                        <i class="fas fa-envelope"></i><span dir="ltr">adaliaforelectricelevators@gmail.com</span>
+                    </div>
+                </div>
             </div>
             <div class="footer-bottom">جميع الحقوق محفوظة &copy; 2026</div>
         </footer>
         
-        <a href="https://wa.me/201003637971" class="wa-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
+        <!-- زر الواتساب العائم -->
+        <a href="https://wa.me/201556875009" class="wa-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
     </div>
 
     <!-- ================= لوحة الإدارة ================= -->
@@ -286,6 +298,7 @@
                     <h2 class="card-title">نظرة عامة</h2>
                     <div class="responsive-grid">
                         <div class="card" style="text-align:center;">إجمالي العملاء<h3 id="stC" style="color:var(--primary); font-size:22px; margin-top:8px;">0</h3></div>
+                        <div class="card" style="text-align:center;">إجمالي الفنيين<h3 id="stTechs" style="color:var(--accent); font-size:22px; margin-top:8px;">0</h3></div>
                         <div class="card" style="text-align:center;">الطلبات النشطة<h3 id="stOrders" style="color:var(--warning); font-size:22px; margin-top:8px;">0</h3></div>
                         <div class="card" style="text-align:center;">إجمالي المبيعات<h3 id="stSales" style="color:var(--success); font-size:22px; margin-top:8px;">0 ج.م</h3></div>
                         <div class="card" style="text-align:center;">طلبات الأرشيف<h3 id="stArchive" style="color:var(--text-muted); font-size:22px; margin-top:8px;">0</h3></div>
@@ -393,16 +406,38 @@
                             <button class="btn btn-success btn-small" onclick="addCat()">إضافة</button>
                         </div>
                     </div>
+                    
                     <div class="card">
                         <h4 style="margin-bottom:8px;">رفع منتج جديد:</h4>
                         <div class="responsive-grid">
                             <select id="pC" class="form-control"></select>
                             <input type="text" id="pN" class="form-control" placeholder="اسم المنتج">
                             <input type="number" id="pP" class="form-control" placeholder="السعر">
-                            <input type="text" id="pImgUrl" class="form-control" placeholder="رابط الصورة">
+                            <div class="form-group" style="grid-column:1/-1;">
+                                <label class="form-label">صورة المنتج (من الجهاز)</label>
+                                <input type="file" id="pImageFile" accept="image/*" class="form-control">
+                            </div>
                             <button class="btn" onclick="addP()">رفع المنتج</button>
                         </div>
                     </div>
+
+                    <!-- كارت تعديل المنتج (مخفي افتراضياً) -->
+                    <div id="edPForm" class="card hidden">
+                        <h4 style="margin-bottom:8px; color:var(--warning);">تعديل المنتج:</h4>
+                        <div class="responsive-grid">
+                            <input type="hidden" id="epId">
+                            <select id="epC" class="form-control"></select>
+                            <input type="text" id="epN" class="form-control" placeholder="اسم المنتج">
+                            <input type="number" id="epP" class="form-control" placeholder="السعر">
+                            <div class="form-group" style="grid-column:1/-1;">
+                                <label class="form-label">تغيير صورة المنتج (اختياري)</label>
+                                <input type="file" id="epImageFile" accept="image/*" class="form-control">
+                            </div>
+                            <button class="btn btn-warning" onclick="saveP()">تحديث المنتج</button>
+                            <button class="btn btn-outline" onclick="document.getElementById('edPForm').classList.add('hidden')">إلغاء التعديل</button>
+                        </div>
+                    </div>
+
                     <div class="card">
                         <div style="overflow-x:auto;">
                             <table>
@@ -438,8 +473,8 @@
         <div class="modal-box">
             <button class="close-m" onclick="closeModal('loginModal')"><i class="fas fa-times"></i></button>
             <h3 style="text-align:center; color:var(--primary); margin-bottom:15px; font-weight:900;"><i class="fas fa-user-circle" style="font-size:35px; display:block; margin-bottom:8px;"></i>تسجيل الدخول</h3>
-            <input type="text" id="lName" class="form-control" style="margin-bottom:12px;" placeholder="">
-            <input type="tel" id="lPhone" class="form-control" style="margin-bottom:12px;" placeholder="">
+            <input type="text" id="lName" class="form-control" style="margin-bottom:12px;" placeholder="الاسم (للتسجيل لأول مرة) أو admin">
+            <input type="tel" id="lPhone" class="form-control" style="margin-bottom:12px;" placeholder="رقم التليفون أو admin">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:15px; font-size:12px; font-weight:700;">
                 <input type="checkbox" id="rememberMe" style="width:16px; height:16px; cursor:pointer;">
                 <label for="rememberMe" style="cursor:pointer;">تذكرني</label>
@@ -492,24 +527,6 @@
         </div>
     </div>
     
-    <div id="infoModal" class="modal-wrap">
-        <div class="modal-box" style="text-align:center;">
-            <button class="close-m" onclick="closeModal('infoModal')"><i class="fas fa-times"></i></button>
-            <i class="fas fa-building" style="font-size:35px; color:var(--accent); margin-bottom:12px;"></i>
-            <h3 style="color:var(--primary); font-weight:900;">أضاليا للمصاعد</h3>
-            <p style="font-size:13px; color:#666; margin-top:8px;">خبراء في حلول المصاعد وتوفير أرقى قطع الغيار.</p>
-        </div>
-    </div>
-    
-    <div id="contactModal" class="modal-wrap">
-        <div class="modal-box" style="text-align:center;">
-            <button class="close-m" onclick="closeModal('contactModal')"><i class="fas fa-times"></i></button>
-            <h3 style="color:var(--primary); margin-bottom:15px; font-weight:900;">تواصل معنا</h3>
-            <div style="font-weight:900; font-size:16px; direction:ltr; margin-bottom:8px;">01556875009</div>
-            <div style="font-weight:700; color:var(--primary); direction:ltr; font-size:12px;">adaliaforelectricelevators@gmail.com</div>
-        </div>
-    </div>
-
 <script>
     const fbConfig = { apiKey: "AIzaSyBRA0Bh0mGJW20OykFwMypvkqkorJimvX4", authDomain: "adaila-dfb0a.firebaseapp.com", projectId: "adaila-dfb0a", storageBucket: "adaila-dfb0a.firebasestorage.app", messagingSenderId: "1014404850986", appId: "1:1014404850986:web:ae660612681da106fa2a53" };
     let dbCloud = null; try{ firebase.initializeApp(fbConfig); dbCloud = firebase.firestore(); }catch(e){}
@@ -518,21 +535,19 @@
         users: {}, techs: {}, categories: ["الكل", "ماكينات", "كبائن", "كنترول", "اكسسوارات"], 
         products: [
             { id: 1, name: "ماكينة إيطالي مونتناري 10 حصان", cat: "ماكينات", price: 45000, img: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300" },
-            { id: 2, name: "كرسي كابينة مصعد", cat: "كبائن", price: 1200, img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=300" },
-            { id: 3, name: "لوحة كنترول متكاملة", cat: "كنترول", price: 8500, img: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=300" },
-            { id: 4, name: "حساس ليزر باب أوتوماتيك", cat: "اكسسوارات", price: 950, img: "https://images.unsplash.com/photo-1555664424-778a1e5e1b48?w=300" }
+            { id: 2, name: "كرسي كابينة مصعد", cat: "كبائن", price: 1200, img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=300" }
         ], 
         orders: [], archiveOrders: [] 
     };
     
-    let db = JSON.parse(localStorage.getItem('AdaliaDB_V47')) || initDb;
+    let db = JSON.parse(localStorage.getItem('AdaliaDB_V51')) || initDb;
     let currUser = localStorage.getItem('AdaliaCurrUser') || null;
     let cart = []; let currCat = "الكل";
     let activeFinishingTaskId = null;
     let activeFinishingTechPhone = null;
 
     function saveDB() { 
-        localStorage.setItem('AdaliaDB_V47', JSON.stringify(db)); 
+        localStorage.setItem('AdaliaDB_V51', JSON.stringify(db)); 
         if(dbCloud) {
             dbCloud.collection("system").doc("mainDatabase").set(db).catch(()=>{});
         }
@@ -554,31 +569,33 @@
 
     window.onload = () => {
         const l = document.getElementById('loadingScreen');
-        const start = () => { 
-            l.style.opacity=0; setTimeout(()=>l.style.display='none',200); 
-            db=JSON.parse(localStorage.getItem('AdaliaDB_V47'))||initDb; 
-            ensureDataIntegrity();
-            db.techs=db.techs||{}; db.orders=db.orders||[]; db.archiveOrders=db.archiveOrders||[]; 
-            initUI(); 
-        };
+        db = JSON.parse(localStorage.getItem('AdaliaDB_V51')) || initDb; 
+        ensureDataIntegrity();
         
-        setTimeout(start, 1500);
-
         if(dbCloud){ 
-            dbCloud.collection("system").doc("mainDatabase").get().then(doc=>{ 
+            dbCloud.collection("system").doc("mainDatabase").onSnapshot((doc) => {
                 if(doc.exists) {
-                    db=doc.data(); 
+                    db = doc.data(); 
                     ensureDataIntegrity();
-                    db.techs=db.techs||{}; db.orders=db.orders||[]; db.archiveOrders=db.archiveOrders||[]; 
-                    l.style.opacity=0; setTimeout(()=>l.style.display='none',200); 
+                    db.techs = db.techs || {}; db.orders = db.orders || []; db.archiveOrders = db.archiveOrders || []; 
+                    localStorage.setItem('AdaliaDB_V51', JSON.stringify(db));
                     initUI(); 
+                    if(currUser === 'admin') renderAdmin();
+                    l.style.opacity=0; setTimeout(()=>l.style.display='none',200); 
                 } else {
                     saveDB(); 
-                    l.style.opacity=0; setTimeout(()=>l.style.display='none',200); 
                     initUI();
+                    l.style.opacity=0; setTimeout(()=>l.style.display='none',200); 
                 }
-            }).catch(()=>start()); 
-        } else start();
+            }, (error) => {
+                console.log("Error fetching data:", error);
+                initUI();
+                l.style.opacity=0; setTimeout(()=>l.style.display='none',200); 
+            });
+        } else {
+            initUI();
+            l.style.opacity=0; setTimeout(()=>l.style.display='none',200); 
+        }
     };
 
     function initUI() { 
@@ -870,6 +887,7 @@
     function swAdmin(id, el) { document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.querySelectorAll('.admin-link').forEach(l=>l.classList.remove('active')); document.getElementById(id).classList.add('active'); el.classList.add('active'); document.getElementById('adminSidebar').classList.remove('open'); }
     function renderAdmin() {
         document.getElementById('stC').innerText = Object.keys(db.users).length;
+        document.getElementById('stTechs').innerText = Object.keys(db.techs).length; 
         document.getElementById('stOrders').innerText = (db.orders || []).length;
         document.getElementById('stArchive').innerText = (db.archiveOrders || []).length;
         
@@ -879,10 +897,19 @@
         }
         document.getElementById('stSales').innerText = totalSales.toLocaleString() + " ج.م";
 
-        const selC=document.getElementById('adSelC'), selT=document.getElementById('asT'), selTC=document.getElementById('asC'), pC=document.getElementById('pC');
+        const selC=document.getElementById('adSelC'), selT=document.getElementById('asT'), selTC=document.getElementById('asC');
+        const epC = document.getElementById('epC'), pC = document.getElementById('pC');
+        
         selC.innerHTML='<option value="">- اختر عميل -</option>'; selTC.innerHTML=''; for(let p in db.users){ selC.innerHTML+=`<option value="${p}">${db.users[p].name}</option>`; selTC.innerHTML+=`<option value="${p}">${db.users[p].name}</option>`; }
         selT.innerHTML='<option value="">- اختر فني -</option>'; for(let p in db.techs) selT.innerHTML+=`<option value="${p}">${db.techs[p].name}</option>`;
-        pC.innerHTML=''; db.categories.forEach(c=>{ if(c!=='الكل') pC.innerHTML+=`<option value="${c}">${c}</option>`; });
+        
+        pC.innerHTML=''; epC.innerHTML=''; 
+        db.categories.forEach(c=>{ 
+            if(c!=='الكل') {
+                pC.innerHTML+=`<option value="${c}">${c}</option>`; 
+                epC.innerHTML+=`<option value="${c}">${c}</option>`; 
+            }
+        });
         
         // قائمة الفنيين
         const techTb = document.getElementById('techTb');
@@ -920,7 +947,20 @@
         if(!hasTasks) adminTasksTb.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888;">لا توجد مأموريات مسندة.</td></tr>';
 
         // المنتجات
-        const pt = document.getElementById('pTb'); pt.innerHTML=''; db.products.forEach(p=>{ pt.innerHTML+=`<tr><td><strong>${p.name}</strong></td><td>${p.price}</td><td><button class="btn btn-danger btn-small" style="padding:4px 8px;" onclick="delP(${p.id})">حذف</button></td></tr>`; });
+        const pt = document.getElementById('pTb'); pt.innerHTML=''; 
+        db.products.forEach(p=>{ 
+            pt.innerHTML+=`<tr>
+                <td style="display:flex; align-items:center; gap:10px;">
+                    <img src="${p.img}" style="width:40px; height:40px; border-radius:4px; object-fit:cover; border:1px solid #eee;">
+                    <strong>${p.name}</strong>
+                </td>
+                <td>${p.price} ج</td>
+                <td>
+                    <button class="btn btn-warning btn-small" style="padding:4px 8px; margin-bottom:4px;" onclick="loadP(${p.id})"><i class="fas fa-edit"></i> تعديل</button><br>
+                    <button class="btn btn-danger btn-small" style="padding:4px 8px;" onclick="delP(${p.id})"><i class="fas fa-trash"></i> حذف</button>
+                </td>
+            </tr>`; 
+        });
         
         // الطلبات الحالية (قائمة 3 نقط)
         const ordersContainer = document.getElementById('ordersCardsContainer');
@@ -1177,16 +1217,82 @@
         const n = document.getElementById('pN').value.trim();
         const p = document.getElementById('pP').value.trim();
         const c = document.getElementById('pC').value;
-        const i = document.getElementById('pImgUrl').value.trim();
+        const fileInput = document.getElementById('pImageFile');
+        
         if(!n || !p || !c) return alertMsg("خطأ", "يرجى إدخال اسم المنتج، السعر، واختيار القسم.");
         
+        let imgSrc = "https://images.unsplash.com/photo-1518770660439-4636190af475?w=300"; 
+        
+        if (fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imgSrc = e.target.result;
+                finalizeAddP(n, p, c, imgSrc);
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        } else {
+            finalizeAddP(n, p, c, imgSrc);
+        }
+    }
+
+    function finalizeAddP(n, p, c, img) {
         db.products.push({
-            id: Date.now(), name: n, price: p, cat: c,
-            img: i || "https://images.unsplash.com/photo-1518770660439-4636190af475?w=300"
+            id: Date.now(), name: n, price: p, cat: c, img: img
         }); 
         saveDB(); renderAdmin(); renderStore(); 
         alertMsg("نجاح", "تم رفع المنتج وتصفير الخانات."); 
-        ['pN','pP','pImgUrl'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('pN').value = '';
+        document.getElementById('pP').value = '';
+        document.getElementById('pImageFile').value = '';
+    }
+
+    function loadP(id) {
+        const p = db.products.find(x => Number(x.id) === Number(id));
+        if(!p) return;
+        document.getElementById('epId').value = p.id;
+        document.getElementById('epN').value = p.name;
+        document.getElementById('epP').value = p.price;
+        document.getElementById('epC').value = p.cat;
+        document.getElementById('epImageFile').value = '';
+        document.getElementById('edPForm').classList.remove('hidden');
+        document.getElementById('edPForm').scrollIntoView({behavior: 'smooth'});
+    }
+
+    function saveP() {
+        const id = document.getElementById('epId').value;
+        const n = document.getElementById('epN').value.trim();
+        const pVal = document.getElementById('epP').value.trim();
+        const c = document.getElementById('epC').value;
+        const fileInput = document.getElementById('epImageFile');
+
+        if(!n || !pVal || !c) return alertMsg("خطأ", "الاسم والسعر والقسم مطلوبين.");
+
+        const pIndex = db.products.findIndex(x => Number(x.id) === Number(id));
+        if(pIndex === -1) return;
+
+        let updateObj = db.products[pIndex];
+        updateObj.name = n;
+        updateObj.price = pVal;
+        updateObj.cat = c;
+
+        if(fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                updateObj.img = e.target.result;
+                finalizeSaveP();
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        } else {
+            finalizeSaveP();
+        }
+    }
+
+    function finalizeSaveP() {
+        saveDB();
+        renderAdmin();
+        renderStore();
+        alertMsg("تم التحديث", "تم تعديل بيانات المنتج بنجاح.");
+        document.getElementById('edPForm').classList.add('hidden');
     }
 
     function delP(id) { 
