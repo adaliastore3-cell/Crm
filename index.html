@@ -178,8 +178,9 @@
         </header>
         <div class="filter-dropdown" id="bellDropdown" style="left:15px; right:auto; width:280px; padding:15px;"></div>
 
+        <!-- رابط البانر الجديد -->
         <div class="hero-banner">
-            <img src="https://i.postimg.cc/fRFGMwFq/IMG-20260907-WA0046.jpg" alt="أضاليا للمصاعد">
+            <img src="https://i.postimg.cc/cCgwYG0R/1788999519434.png" alt="أضاليا للمصاعد">
         </div>
 
         <div class="controls-container">
@@ -206,7 +207,6 @@
             <div class="menu-items">
                 <button class="menu-item" onclick="showView('store'); toggleSidebar();"><i class="fas fa-store"></i> المتجر الرئيسي</button>
                 
-                <!-- زرار تسجيل الدخول المباشر وغير المخفي -->
                 <div id="authMenu">
                     <button class="menu-item" onclick="openModal('loginModal'); toggleSidebar();"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول / حسابي</button>
                 </div>
@@ -476,12 +476,17 @@
         orders: [] 
     };
     
-    let db = JSON.parse(localStorage.getItem('AdaliaDB_V32')) || initDb;
+    let db = JSON.parse(localStorage.getItem('AdaliaDB_V35')) || initDb;
     let currUser = null; let cart = []; let currCat = "الكل";
 
     function saveDB() { 
-        localStorage.setItem('AdaliaDB_V32', JSON.stringify(db)); 
+        localStorage.setItem('AdaliaDB_V35', JSON.stringify(db)); 
         if(dbCloud) dbCloud.collection("system").doc("mainDatabase").set(db).catch(()=>{}); 
+    }
+    
+    function toISO(dateStr) { 
+        if(!dateStr) return ""; 
+        return dateStr.replace(/\//g, '-'); 
     }
     
     function ensureDataIntegrity() {
@@ -496,7 +501,7 @@
         const l = document.getElementById('loadingScreen');
         const start = () => { 
             l.style.opacity=0; setTimeout(()=>l.style.display='none',300); 
-            db=JSON.parse(localStorage.getItem('AdaliaDB_V32'))||initDb; 
+            db=JSON.parse(localStorage.getItem('AdaliaDB_V35'))||initDb; 
             ensureDataIntegrity();
             db.techs=db.techs||{}; db.orders=db.orders||[]; 
             initUI(); 
@@ -667,9 +672,74 @@
         const ot = document.getElementById('oTb'); ot.innerHTML=''; [...db.orders].reverse().forEach(o=>{ const stat = o.status==='pending'?`<button class="btn btn-success btn-small" onclick="chStO(${o.id})">تم التسليم</button>`:`<span style="color:var(--success);font-weight:bold;">مكتمل</span>`; ot.innerHTML+=`<tr><td><strong>${o.cName}</strong><br><span style="font-size:11px;color:#777;">${o.cPhone}</span></td><td>${Number(o.total).toLocaleString()} ج</td><td>${stat} <button class="btn btn-danger btn-small" onclick="delO(${o.id})"><i class="fas fa-trash"></i></button></td></tr>`; });
     }
     
-    function addC() { const n=document.getElementById('nCN').value, p=document.getElementById('nCP').value; if(!n||!p)return alertMsg("خطأ","الاسم والرقم مطلوبان."); db.users[p]={phone:p,name:n, address:document.getElementById('nCA').value, machineType:document.getElementById('nCM').value, machinePower:document.getElementById('nCPw').value, machineOil:document.getElementById('nCO').value, floors:document.getElementById('nCF').value, stops:document.getElementById('nCS').value, wireOrigin:document.getElementById('nCW').value, wireChangeDate:document.getElementById('nCWD').value, wireNextChange:document.getElementById('nCWN').value, lastMaint:document.getElementById('nCL').value, nextMaint:document.getElementById('nCNx').value, messages:[]}; saveDB(); renderAdmin(); alertMsg("تم","إضافة العميل بنجاح"); document.getElementById('addCForm').classList.add('hidden'); }
-    function loadC() { const p=document.getElementById('adSelC').value; if(!p)return document.getElementById('edCForm').classList.add('hidden'); const u=db.users[p]; document.getElementById('edCForm').classList.remove('hidden'); document.getElementById('eCN').value=u.name; document.getElementById('eCP').value=u.phone; document.getElementById('eCA').value=u.address||''; document.getElementById('eCM').value=u.machineType||''; document.getElementById('eCPw').value=u.machinePower||''; document.getElementById('eCO').value=toISO(u.machineOil); document.getElementById('eCF').value=u.floors||''; document.getElementById('eCS').value=u.stops||''; document.getElementById('eCW').value=u.wireOrigin||''; document.getElementById('eCWD').value=toISO(u.wireChangeDate); document.getElementById('eCWN').value=toISO(u.wireNextChange); document.getElementById('eCL').value=toISO(u.lastMaint); document.getElementById('eCNx').value=toISO(u.nextMaint); document.getElementById('eCNotes').value=u.notes||''; }
-    function saveC() { const p=document.getElementById('eCP').value; if(p){ const u=db.users[p]; u.name=document.getElementById('eCN').value; u.address=document.getElementById('eCA').value; u.machineType=document.getElementById('eCM').value; u.machinePower=document.getElementById('eCPw').value; u.machineOil=document.getElementById('eCO').value; u.floors=document.getElementById('eCF').value; u.stops=document.getElementById('eCS').value; u.wireOrigin=document.getElementById('eCW').value; u.wireChangeDate=document.getElementById('eCWD').value; u.wireNextChange=document.getElementById('eCWN').value; u.lastMaint=document.getElementById('eCL').value; u.nextMaint=document.getElementById('eCNx').value; u.notes=document.getElementById('eCNotes').value; saveDB(); alertMsg("تحديث ناجح", "تم تعديل وحفظ بيانات العميل بنجاح."); } }
+    function addC() { 
+        const n=document.getElementById('nCN').value.trim(), p=document.getElementById('nCP').value.trim(); 
+        if(!n||!p)return alertMsg("خطأ","الاسم والرقم مطلوبان."); 
+        db.users[p]={
+            phone:p, name:n, 
+            address:document.getElementById('nCA').value, 
+            machineType:document.getElementById('nCM').value, 
+            machinePower:document.getElementById('nCPw').value, 
+            machineOil:document.getElementById('nCO').value, 
+            floors:document.getElementById('nCF').value, 
+            stops:document.getElementById('nCS').value, 
+            wireOrigin:document.getElementById('nCW').value, 
+            wireChangeDate:document.getElementById('nCWD').value, 
+            wireNextChange:document.getElementById('nCWN').value, 
+            lastMaint:document.getElementById('nCL').value, 
+            nextMaint:document.getElementById('nCNx').value, 
+            messages:[]
+        }; 
+        saveDB(); 
+        renderAdmin(); 
+        alertMsg("تم الحفظ", "<i class='fas fa-check-circle' style='color:var(--success); font-size:40px; margin-bottom:10px; display:block;'></i>تم إضافة وتخزين العميل بنجاح."); 
+        document.getElementById('addCForm').classList.add('hidden'); 
+        ['nCN','nCP','nCA','nCM','nCPw','nCO','nCF','nCS','nCW','nCWD','nCWN','nCL','nCNx'].forEach(id => document.getElementById(id).value = '');
+    }
+
+    function loadC() { 
+        const p=document.getElementById('adSelC').value; 
+        const ed=document.getElementById('edCForm');
+        if(!p) return ed.classList.add('hidden'); 
+        const u=db.users[p]; 
+        ed.classList.remove('hidden'); 
+        document.getElementById('eCN').value=u.name||''; 
+        document.getElementById('eCP').value=u.phone||''; 
+        document.getElementById('eCA').value=u.address||''; 
+        document.getElementById('eCM').value=u.machineType||''; 
+        document.getElementById('eCPw').value=u.machinePower||''; 
+        document.getElementById('eCO').value=toISO(u.machineOil); 
+        document.getElementById('eCF').value=u.floors||''; 
+        document.getElementById('eCS').value=u.stops||''; 
+        document.getElementById('eCW').value=u.wireOrigin||''; 
+        document.getElementById('eCWD').value=toISO(u.wireChangeDate); 
+        document.getElementById('eCWN').value=toISO(u.wireNextChange); 
+        document.getElementById('eCL').value=toISO(u.lastMaint); 
+        document.getElementById('eCNx').value=toISO(u.nextMaint); 
+        document.getElementById('eCNotes').value=u.notes||''; 
+    }
+
+    function saveC() { 
+        const p=document.getElementById('eCP').value; 
+        if(p){ 
+            const u=db.users[p]; 
+            u.name=document.getElementById('eCN').value; 
+            u.address=document.getElementById('eCA').value; 
+            u.machineType=document.getElementById('eCM').value; 
+            u.machinePower=document.getElementById('eCPw').value; 
+            u.machineOil=document.getElementById('eCO').value; 
+            u.floors=document.getElementById('eCF').value; 
+            u.stops=document.getElementById('eCS').value; 
+            u.wireOrigin=document.getElementById('eCW').value; 
+            u.wireChangeDate=document.getElementById('eCWD').value; 
+            u.wireNextChange=document.getElementById('eCWN').value; 
+            u.lastMaint=document.getElementById('eCL').value; 
+            u.nextMaint=document.getElementById('eCNx').value; 
+            u.notes=document.getElementById('eCNotes').value; 
+            saveDB(); 
+            alertMsg("تحديث ناجح", "<i class='fas fa-check-circle' style='color:var(--success); font-size:40px; margin-bottom:10px; display:block;'></i>تم تعديل وحفظ بيانات العميل بنجاح."); 
+        } 
+    }
     
     function addT() { const n=document.getElementById('tN').value, p=document.getElementById('tP').value; if(n&&p){ db.techs[p]={name:n,phone:p,tasks:[]}; saveDB(); renderAdmin(); alertMsg("تم","إضافة الفني بنجاح"); document.getElementById('tN').value=''; document.getElementById('tP').value='';} }
     function assT() { const tp=document.getElementById('asT').value, cp=document.getElementById('asC').value, d=document.getElementById('asD').value; if(tp&&cp&&d){ db.techs[tp].tasks.push({id:Date.now(), cName:db.users[cp].name, cAddress:db.users[cp].address||'', cPhone:db.users[cp].phone, date:d, status:'pending'}); saveDB(); renderAdmin(); alertMsg("تم","إرسال المأمورية"); } }
